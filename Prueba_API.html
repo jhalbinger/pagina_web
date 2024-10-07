@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta la Cotización del Dólar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #resultado {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+		
+		.opciones {
+		text-align:left;
+		}
+		
+		.boton_opciones {
+		margin-left: 0px;
+		}
+		
+		h1 {
+		color: red;
+		text-decoration: underline;
+		}
+		
+    </style>
+</head>
+<body>
+
+	<button id="consultaNoticias"> Consultar noticia </button>
+	<p id="noticia"></p>
+	<br>
+    <h1>Consulta la Cotización de moneda que elijas</h1>
+	<br>
+	<select id="monedas">
+		<option value="USD"> Dólar </option>
+		<option value="BRL"> Real </option>
+		<option value="Euro"> Euro </option>
+	</select>
+	<br><br>
+	<button id="consultaDolarBtn">Consultar cotizacion</button>
+	<br>
+    <p id="resultado"></p>
+	<br><br><br>
+	
+    <h1>Consulta la temperatura</h1>
+    <h3>Seleccione de qué ciudad desea consultar la temperatura:</h3>
+    <select id="boton_opciones">
+        <option value="Buenos Aires">Buenos Aires</option>
+        <option value="Miami">Miami</option>
+        <option value="New York">Nueva York</option>
+    </select>
+    <br>
+	<br>
+    <button id="consultaTemp">Consulta la temperatura</button>
+    <p id="tempActual"></p>
+	<p id="ultimaTemp"></p>
+	
+
+
+    <script>
+        // Al hacer clic en el botón, se ejecutará la función que llama a la API
+        document.getElementById("consultaDolarBtn").addEventListener("click", function() {
+		
+		const monedaElegida = document.getElementById("monedas").value;
+            // URL de la API, aquí utilizo una API de ejemplo para consultar la cotización del dólar
+            const apiURL = `https://api.exchangerate-api.com/v4/latest/${monedaElegida}`;
+
+
+            // Hacemos la solicitud GET a la API
+            fetch(apiURL)
+                .then(response => response.json())  // Parseamos la respuesta a JSON
+                .then(data => {
+                    
+                    const cotizacionDolar = data.rates.ARS;
+					localStorage.setItem('ultimaCotizacion', cotizacionDolar);
+
+                    // Mostramos el resultado en el <p> con id "resultado"
+                    document.getElementById("resultado").innerText = "Cotización de " + monedaElegida + " : $" + cotizacionDolar;
+                })
+                .catch(error => {
+                    console.error("Error al obtener la cotización:", error);
+                    document.getElementById("resultado").innerText = "Error al obtener la cotización.";
+                });
+        });
+		
+
+		
+		
+		document.getElementById("consultaNoticias").addEventListener("click", function() {
+		
+           const apiURL = "https://gnews.io/api/v4/top-headlines?category=general&apikey=0ab3bdc647419bd1fb1969687ce13fb4";
+
+            // Hacemos la solicitud GET a la API
+            fetch(apiURL)
+                .then(response => response.json())  // Parseamos la respuesta a JSON
+                .then(data => {
+                    
+					const resultados = data.totalArticles;	
+					const titular = data.articles[2].title;
+					const autor = data.articles[2].source.name;
+
+
+                    document.getElementById("noticia").innerText = "Resultados totales: " + resultados + ", Titulo: " + titular + ", Autor: " + autor;
+                })
+                .catch(error => {
+                    console.error("Error al obtener la noticia:", error);
+                    document.getElementById("noticia").innerText = "Error al obtener la noticia.";
+                });
+        });
+		
+		
+		
+		document.getElementById("consultaTemp").addEventListener("click", function() {
+		
+		const ciudadSeleccionada = document.getElementById("boton_opciones").value; // Obtener el valor del select
+            const apiURL = `https://api.openweathermap.org/data/2.5/weather?q=${ciudadSeleccionada}&appid=aa563096a83e216ba63632f6fca96f47&units=metric`;
+
+            // Hacemos la solicitud GET a la API
+            fetch(apiURL)
+                .then(response => response.json())  // Parseamos la respuesta a JSON
+                .then(data => {
+                    // Obtenemos la temperatura
+                    const temp = data.main.temp;
+					const maxima = data.main.temp_max;
+					
+					localStorage.setItem('ultimaCiudad', ciudadSeleccionada);
+					localStorage.setItem('ultimaTemp', temp);
+
+                    // Mostramos el resultado en el <p> con id "resultado"
+                    document.getElementById("tempActual").innerText = "Temperatura actual de " + ciudadSeleccionada + ": " + temp + ", y la maxima sera de: " + maxima + "";
+                })
+                .catch(error => {
+                    console.error("Error al obtener la temperatura:", error);
+                    document.getElementById("tempActual").innerText = "Error al obtener la temperatura.";
+                });
+        });
+		
+		
+		window.onload = function() {
+    const ultimaCiudad = localStorage.getItem('ultimaCiudad');
+	const ultimaTemp = localStorage.getItem('ultimaTemp');
+    if (ultimaCiudad && ultimaTemp) {
+        document.getElementById("ultimaTemp").innerText = `Última ciudad consultada: ${ultimaCiudad} donde hacian ${ultimaTemp}` ;
+    }
+	
+	    const ultimaCotizacion = localStorage.getItem('ultimaCotizacion');
+    if (ultimaCotizacion) {
+        document.getElementById("resultado").innerText = `Última cotización guardada: ${ultimaCotizacion}`;
+    }
+};
+		
+    </script>
+
+</body>
+</html>
